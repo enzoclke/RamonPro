@@ -1,4 +1,4 @@
-const API_KEY = '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';
+const API_KEY = process.env.REACT_APP_BREVO_KEY;
 const EXPEDITEUR_EMAIL = 'enzo.clincke23@gmail.com';
 const EXPEDITEUR_NOM = 'RamonPro';
 
@@ -31,12 +31,10 @@ export async function envoyerEmail({ destinataire, prenom, nom, sujet, message }
   });
 
   const data = await response.json();
-
   if (!response.ok) {
     console.error('Erreur Brevo:', data);
     throw new Error(data.message || 'Erreur envoi email');
   }
-
   return true;
 }
 
