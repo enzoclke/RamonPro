@@ -84,6 +84,7 @@ export default function NouveauRDV({ onSave, onCancel }) {
             ))}
           </div>
         )}
+        <div className="h-24" />
       </div>
     );
   }
