@@ -138,6 +138,7 @@ function App() {
           setInterventions={setInterventions}
         />
       )}
+      {onglet === 'frais' && <Frais />}
       {onglet === 'tournee' && (
         <Tournee onValiderTournees={ajouterInterventions} />
       )}
