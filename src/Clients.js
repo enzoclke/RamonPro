@@ -101,6 +101,7 @@ export default function Clients() {
   const [vue, setVue] = useState('liste');
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [interventionsClient, setInterventionsClient] = useState([]);
 
   useEffect(() => {
     chargerClients();
@@ -118,6 +119,21 @@ export default function Clients() {
       setClients(data || []);
     }
     setLoading(false);
+  }
+
+  async function chargerInterventionsClient(client) {
+    const nomComplet = `${client.prenom} ${client.nom}`;
+    const { data, error } = await supabase
+      .from('interventions')
+      .select('*')
+      .eq('client', nomComplet)
+      .order('date', { ascending: true });
+    if (error) {
+      console.error('Erreur chargement interventions:', error);
+      setInterventionsClient([]);
+    } else {
+      setInterventionsClient(data || []);
+    }
   }
 
   async function ajouterClient(form) {
@@ -205,6 +221,28 @@ export default function Clients() {
             )}
           </div>
         </div>
+
+        <div className="m-4 bg-white rounded-xl shadow p-4">
+          <h2 className="font-bold text-blue-900 text-lg mb-3">📅 Historique & RDV</h2>
+          {interventionsClient.length === 0 ? (
+            <p className="text-gray-400 text-sm">Aucune intervention enregistrée</p>
+          ) : (
+            <div className="space-y-2">
+              {interventionsClient.map(inter => (
+                <div key={inter.id} className="flex justify-between items-center border-b border-gray-100 pb-2 last:border-0">
+                  <div>
+                    <p className="font-medium text-sm">{new Date(inter.date).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-gray-400 text-xs">{inter.heure} — {inter.appareil}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${inter.statut === 'realise' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                    {inter.statut === 'realise' ? '✅ Réalisé' : '📅 Prévu'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="mx-4 space-y-3">
           <button className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold">📅 Planifier une intervention</button>
           <button className="w-full bg-blue-900 text-white py-3 rounded-xl font-semibold">📧 Envoyer un rappel</button>
@@ -248,7 +286,7 @@ export default function Clients() {
             filtres.map(client => {
               const mois = moisDepuis(client.derniere_intervention);
               return (
-                <div key={client.id} onClick={() => { setSelected(client); setVue('fiche'); }}
+                <div key={client.id} onClick={() => { setSelected(client); setVue('fiche'); chargerInterventionsClient(client); }}
                   className="bg-white rounded-xl shadow p-4 cursor-pointer hover:shadow-md transition">
                   <div className="flex justify-between items-start">
                     <div>

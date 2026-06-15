@@ -54,8 +54,7 @@ function App() {
         <>
           <div className="bg-blue-900 text-white px-4 py-4 flex justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold">🧹 RamonPro</h1>
-              <p className="text-blue-200 text-sm">Bonjour Michel 👋</p>
+              <h1 className="text-xl font-bold">Bonjour Kevin 👋</h1>
             </div>
             <button onClick={handleLogout} className="text-blue-200 text-sm border border-blue-300 rounded-lg px-3 py-1">
               Déconnexion
