@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import NouveauRDV from './NouveauRDV';
 import { supabase } from './supabase';
 
+function formatDateLocale(date) {
+  const annee = date.getFullYear();
+  const mois = String(date.getMonth() + 1).padStart(2, '0');
+  const jour = String(date.getDate()).padStart(2, '0');
+  return `${annee}-${mois}-${jour}`;
+}
+
 const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const joursComplets = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
@@ -52,8 +59,8 @@ export default function Planning({ interventions, setInterventions }) {
 
   async function chargerInterventions() {
     setLoading(true);
-    const dateDebut = dates[0].toISOString().split('T')[0];
-    const dateFin = dates[6].toISOString().split('T')[0];
+    const dateDebut = formatDateLocale(dates[0]);
+    const dateFin = formatDateLocale(dates[6]);
     const { data, error } = await supabase
       .from('interventions')
       .select('*')
@@ -112,7 +119,7 @@ export default function Planning({ interventions, setInterventions }) {
     }
   }
 
-  const dateSelectionnee = dates[jourSelectionne].toISOString().split('T')[0];
+  const dateSelectionnee = formatDateLocale(dates[jourSelectionne]);
   const interventionsDuJour = interventions
     .filter(i => i.date === dateSelectionnee)
     .sort((a, b) => a.heure.localeCompare(b.heure));
@@ -122,7 +129,7 @@ export default function Planning({ interventions, setInterventions }) {
     jour: jours[i],
     jourComplet: joursComplets[i],
     interventions: interventions
-      .filter(intervention => intervention.date === d.toISOString().split('T')[0])
+      .filter(intervention => intervention.date === formatDateLocale(d))
       .sort((a, b) => a.heure.localeCompare(b.heure))
   }));
 
