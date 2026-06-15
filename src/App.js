@@ -150,6 +150,7 @@ function App() {
           { id: 'clients', icon: '👥', label: 'Clients' },
           { id: 'planning', icon: '📅', label: 'Planning' },
           { id: 'tournee', icon: '🗺️', label: 'Tournée' },
+          { id: 'frais', icon: '💶', label: 'Frais' },
         ].map(o => (
           <button key={o.id} onClick={() => setOnglet(o.id)}
             className={`flex flex-col items-center ${onglet === o.id ? 'text-blue-900' : 'text-gray-400'}`}>
