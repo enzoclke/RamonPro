@@ -4,6 +4,7 @@ import Login from './Login';
 import Clients from './Clients';
 import Planning from './Planning';
 import Tournee from './Tournee';
+import Frais from './Frais';
 import Messages from './Messages';
 
 const interventionsInitiales = [
