@@ -18,6 +18,8 @@ function App() {
   const [interventions, setInterventions] = useState(interventionsInitiales);
   const [session, setSession] = useState(null);
   const [chargementSession, setChargementSession] = useState(true);
+  const [interventionsAccueil, setInterventionsAccueil] = useState([]);
+  const [prochainRDV, setProchainRDV] = useState(null);
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -29,6 +31,35 @@ function App() {
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  React.useEffect(() => {
+    if (session) chargerDonneesAccueil();
+  }, [session]);
+
+  async function chargerDonneesAccueil() {
+    const aujourdHui = new Date().toISOString().split('T')[0];
+    const debutMois = new Date();
+    debutMois.setDate(1);
+    const debutMoisStr = debutMois.toISOString().split('T')[0];
+
+    // Interventions du mois (pour les stats)
+    const { data: dataMois } = await supabase
+      .from('interventions')
+      .select('*')
+      .gte('date', debutMoisStr);
+    setInterventionsAccueil(dataMois || []);
+
+    // Prochain RDV à venir (aujourd'hui ou après, le plus proche)
+    const { data: dataProchain } = await supabase
+      .from('interventions')
+      .select('*')
+      .gte('date', aujourdHui)
+      .eq('statut', 'planifie')
+      .order('date', { ascending: true })
+      .order('heure', { ascending: true })
+      .limit(1);
+    setProchainRDV(dataProchain && dataProchain[0] ? dataProchain[0] : null);
+  }
 
   function ajouterInterventions(nouvelles) {
     setInterventions(prev => [...prev, ...nouvelles]);
@@ -62,8 +93,12 @@ function App() {
           </div>
           <div className="m-4 bg-white rounded-xl shadow p-4">
             <h2 className="font-bold text-blue-900 text-lg mb-2">Aujourd'hui</h2>
-            <p className="text-gray-600">{interventions.filter(i => i.date === new Date().toISOString().split('T')[0]).length} interventions prévues</p>
-            <p className="text-gray-600">Prochain RDV : <strong>9h — Dupont</strong></p>
+            <p className="text-gray-600">{interventionsAccueil.filter(i => i.date === new Date().toISOString().split('T')[0]).length} interventions prévues</p>
+            <p className="text-gray-600">
+              {prochainRDV
+                ? <>Prochain RDV : <strong>{prochainRDV.heure} — {prochainRDV.client}</strong></>
+                : 'Aucun RDV à venir'}
+            </p>
             <button onClick={() => setOnglet('tournee')} className="mt-3 w-full bg-orange-500 text-white py-2 rounded-lg font-semibold">Voir ma tournée →</button>
           </div>
           <div className="mx-4 bg-white rounded-xl shadow p-4">
@@ -75,7 +110,7 @@ function App() {
             <h2 className="font-bold text-blue-900 text-lg mb-3">📊 Ce mois-ci</h2>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="bg-blue-50 rounded-xl p-3">
-                <p className="text-2xl font-bold text-blue-900">{interventions.filter(i => i.statut === 'realise').length}</p>
+                <p className="text-2xl font-bold text-blue-900">{interventionsAccueil.filter(i => i.statut === 'realise').length}</p>
                 <p className="text-xs text-gray-500 mt-1">Interventions</p>
               </div>
               <div className="bg-orange-50 rounded-xl p-3">
