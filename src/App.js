@@ -87,9 +87,14 @@ function App() {
             <div>
               <h1 className="text-xl font-bold">Bonjour Kevin 👋</h1>
             </div>
-            <button onClick={handleLogout} className="text-blue-200 text-sm border border-blue-300 rounded-lg px-3 py-1">
-              Déconnexion
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setOnglet('messages')} className="text-white text-2xl">
+                📧
+              </button>
+              <button onClick={handleLogout} className="text-blue-200 text-sm border border-blue-300 rounded-lg px-3 py-1">
+                Déconnexion
+              </button>
+            </div>
           </div>
           <div className="m-4 bg-white rounded-xl shadow p-4">
             <h2 className="font-bold text-blue-900 text-lg mb-2">Aujourd'hui</h2>
@@ -145,7 +150,6 @@ function App() {
           { id: 'clients', icon: '👥', label: 'Clients' },
           { id: 'planning', icon: '📅', label: 'Planning' },
           { id: 'tournee', icon: '🗺️', label: 'Tournée' },
-          { id: 'messages', icon: '📧', label: 'Messages' },
         ].map(o => (
           <button key={o.id} onClick={() => setOnglet(o.id)}
             className={`flex flex-col items-center ${onglet === o.id ? 'text-blue-900' : 'text-gray-400'}`}>
