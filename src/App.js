@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { supabase } from './supabase';
+import Login from './Login';
 import Clients from './Clients';
 import Planning from './Planning';
 import Tournee from './Tournee';
@@ -14,10 +16,35 @@ const interventionsInitiales = [
 function App() {
   const [onglet, setOnglet] = useState('accueil');
   const [interventions, setInterventions] = useState(interventionsInitiales);
+  const [session, setSession] = useState(null);
+  const [chargementSession, setChargementSession] = useState(true);
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setChargementSession(false);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   function ajouterInterventions(nouvelles) {
     setInterventions(prev => [...prev, ...nouvelles]);
     setOnglet('planning');
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+  }
+
+  if (chargementSession) {
+    return <div className="min-h-screen flex items-center justify-center">Chargement...</div>;
+  }
+
+  if (!session) {
+    return <Login />;
   }
 
   return (
@@ -25,9 +52,14 @@ function App() {
 
       {onglet === 'accueil' && (
         <>
-          <div className="bg-blue-900 text-white px-4 py-4">
-            <h1 className="text-xl font-bold">🧹 RamonPro</h1>
-            <p className="text-blue-200 text-sm">Bonjour Michel 👋</p>
+          <div className="bg-blue-900 text-white px-4 py-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold">🧹 RamonPro</h1>
+              <p className="text-blue-200 text-sm">Bonjour Michel 👋</p>
+            </div>
+            <button onClick={handleLogout} className="text-blue-200 text-sm border border-blue-300 rounded-lg px-3 py-1">
+              Déconnexion
+            </button>
           </div>
           <div className="m-4 bg-white rounded-xl shadow p-4">
             <h2 className="font-bold text-blue-900 text-lg mb-2">Aujourd'hui</h2>
