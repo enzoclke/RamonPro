@@ -7,12 +7,14 @@ import Tournee from './Tournee';
 import Frais from './Frais';
 import Messages from './Messages';
 
-const interventionsInitiales = [
-  { id: 1, client: 'Jean Dupont', adresse: '12 rue des Lilas, Dijon', heure: '08:00', duree: 45, statut: 'planifie', appareil: 'Insert', date: new Date().toISOString().split('T')[0] },
-  { id: 2, client: 'Sophie Martin', adresse: '4 avenue Foch, Beaune', heure: '09:00', duree: 30, statut: 'planifie', appareil: 'Poêle', date: new Date().toISOString().split('T')[0] },
-  { id: 3, client: 'Paul Bernard', adresse: '8 rue Carnot, Nuits-Saint-Georges', heure: '10:00', duree: 45, statut: 'realise', appareil: 'Foyer ouvert', date: new Date().toISOString().split('T')[0] },
-  { id: 4, client: 'Marie Petit', adresse: '2 rue de la Paix, Dijon', heure: '11:00', duree: 30, statut: 'planifie', appareil: 'Chaudière', date: new Date().toISOString().split('T')[0] },
-];
+function formatDateLocale(date) {
+  const annee = date.getFullYear();
+  const mois = String(date.getMonth() + 1).padStart(2, '0');
+  const jour = String(date.getDate()).padStart(2, '0');
+  return `${annee}-${mois}-${jour}`;
+}
+
+const interventionsInitiales = [];
 
 function App() {
   const [onglet, setOnglet] = useState('accueil');
@@ -21,6 +23,8 @@ function App() {
   const [chargementSession, setChargementSession] = useState(true);
   const [interventionsAccueil, setInterventionsAccueil] = useState([]);
   const [prochainRDV, setProchainRDV] = useState(null);
+  const [rdvSemaine, setRdvSemaine] = useState(0);
+  const [clientsAjoutesMois, setClientsAjoutesMois] = useState(0);
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,10 +42,15 @@ function App() {
   }, [session]);
 
   async function chargerDonneesAccueil() {
-    const aujourdHui = new Date().toISOString().split('T')[0];
-    const debutMois = new Date();
-    debutMois.setDate(1);
-    const debutMoisStr = debutMois.toISOString().split('T')[0];
+    const maintenant = new Date();
+    const aujourdHuiStr = formatDateLocale(maintenant);
+
+    const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+    const debutMoisStr = formatDateLocale(debutMois);
+
+    const finSemaine = new Date(maintenant);
+    finSemaine.setDate(finSemaine.getDate() + 7);
+    const finSemaineStr = formatDateLocale(finSemaine);
 
     // Interventions du mois (pour les stats)
     const { data: dataMois } = await supabase
@@ -50,16 +59,34 @@ function App() {
       .gte('date', debutMoisStr);
     setInterventionsAccueil(dataMois || []);
 
+    // Interventions d'aujourd'hui (filtrage local, fuseau horaire correct)
+    // (dataMois couvre déjà le mois en cours donc aujourd'hui est inclus dedans)
+
     // Prochain RDV à venir (aujourd'hui ou après, le plus proche)
     const { data: dataProchain } = await supabase
       .from('interventions')
       .select('*')
-      .gte('date', aujourdHui)
+      .gte('date', aujourdHuiStr)
       .eq('statut', 'planifie')
       .order('date', { ascending: true })
       .order('heure', { ascending: true })
       .limit(1);
     setProchainRDV(dataProchain && dataProchain[0] ? dataProchain[0] : null);
+
+    // RDV prévus sur les 7 prochains jours
+    const { count: countSemaine } = await supabase
+      .from('interventions')
+      .select('*', { count: 'exact', head: true })
+      .gte('date', aujourdHuiStr)
+      .lte('date', finSemaineStr);
+    setRdvSemaine(countSemaine || 0);
+
+    // Clients ajoutés ce mois-ci
+    const { count: countClients } = await supabase
+      .from('clients')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', debutMois.toISOString());
+    setClientsAjoutesMois(countClients || 0);
   }
 
   function ajouterInterventions(nouvelles) {
@@ -78,6 +105,8 @@ function App() {
   if (!session) {
     return <Login />;
   }
+
+  const aujourdHuiStr = formatDateLocale(new Date());
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -99,7 +128,7 @@ function App() {
           </div>
           <div className="m-4 bg-white rounded-xl shadow p-4">
             <h2 className="font-bold text-blue-900 text-lg mb-2">Aujourd'hui</h2>
-            <p className="text-gray-600">{interventionsAccueil.filter(i => i.date === new Date().toISOString().split('T')[0]).length} interventions prévues</p>
+            <p className="text-gray-600">{interventionsAccueil.filter(i => i.date === aujourdHuiStr).length} interventions prévues</p>
             <p className="text-gray-600">
               {prochainRDV
                 ? <>Prochain RDV : <strong>{prochainRDV.heure} — {prochainRDV.client}</strong></>
@@ -120,11 +149,11 @@ function App() {
                 <p className="text-xs text-gray-500 mt-1">Interventions</p>
               </div>
               <div className="bg-orange-50 rounded-xl p-3">
-                <p className="text-2xl font-bold text-orange-500">12</p>
-                <p className="text-xs text-gray-500 mt-1">Certificats</p>
+                <p className="text-2xl font-bold text-orange-500">{rdvSemaine}</p>
+                <p className="text-xs text-gray-500 mt-1">RDV cette semaine</p>
               </div>
               <div className="bg-green-50 rounded-xl p-3">
-                <p className="text-2xl font-bold text-green-600">5</p>
+                <p className="text-2xl font-bold text-green-600">{clientsAjoutesMois}</p>
                 <p className="text-xs text-gray-500 mt-1">Clients ajoutés</p>
               </div>
             </div>
@@ -139,10 +168,10 @@ function App() {
           setInterventions={setInterventions}
         />
       )}
-      {onglet === 'frais' && <Frais />}
       {onglet === 'tournee' && (
         <Tournee onValiderTournees={ajouterInterventions} />
       )}
+      {onglet === 'frais' && <Frais />}
       {onglet === 'messages' && <Messages />}
 
       {/* Navigation */}
