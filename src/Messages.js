@@ -13,7 +13,7 @@ const templates = [
     id: 1,
     label: '🔔 Rappel annuel',
     sujet: 'Il est temps de ramoner !',
-    message: 'Bonjour {prenom},\n\nNous vous rappelons que votre ramonage annuel est à prévoir. N\'hésitez pas à nous contacter pour fixer un rendez-vous.\n\nCordialement,\nVotre ramoneur',
+    message: 'Bonjour {prenom},\n\nNous vous rappelons que votre ramonage annuel est à prévoir. N\'hésitez pas à nous contacter pour fixer un rendez-vous.\n\nCordialement,\n\nKévin SPATARO\nCouverture - Zinguerie - Ramonage\n06.59.69.74.94\nent.spatarokevin@gmail.com\nSainte-Colombe-sur-Seine',
   },
   {
     id: 2,

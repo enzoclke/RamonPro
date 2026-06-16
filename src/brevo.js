@@ -23,6 +23,21 @@ export async function envoyerEmail({ destinataire, prenom, nom, sujet, message }
           <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px;">
             <p style="color: #333; font-size: 16px; line-height: 1.6;">${message.replace(/\n/g, '<br>')}</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <table style="width: 100%;">
+              <tr>
+                <td style="vertical-align: middle; padding-right: 15px;">
+                  <img src="https://ramon-pro.vercel.app/logo-spataro.png" alt="Kévin Spataro" width="90" style="display: block;" />
+                </td>
+                <td style="vertical-align: middle; font-size: 13px; color: #333; line-height: 1.5;">
+                  <strong style="color: #1E3A5F; font-size: 14px;">Kévin SPATARO</strong><br>
+                  Couverture - Zinguerie - Ramonage<br>
+                  📞 06.59.69.74.94<br>
+                  ✉️ ent.spatarokevin@gmail.com<br>
+                  📍 Sainte-Colombe-sur-Seine
+                </td>
+              </tr>
+            </table>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
             <p style="color: #888; font-size: 12px;">Ce message vous a été envoyé par votre ramoneur via RamonPro.</p>
           </div>
         </div>
